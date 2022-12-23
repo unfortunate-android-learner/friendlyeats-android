@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph_kotlin"
-    app:startDestination="@id/MainFragment">
+    app:startDestination="@id/UsersFragment">
 
     <fragment
         android:id="@+id/MainFragment"
@@ -15,12 +15,72 @@
     </fragment>
 
     <fragment
+        android:id="@+id/UsersFragment"
+        android:name="com.google.firebase.example.fireeats.UsersFragment"
+        tools:layout="@layout/fragment_users">
+        <action
+            android:id="@+id/action_UsersFragment_to_ChatsFragment"
+            app:destination="@+id/ChatsFragment"/>
+    </fragment>
+
+    <fragment
         android:id="@+id/RestaurantDetailFragment"
         android:name="com.google.firebase.example.fireeats.RestaurantDetailFragment"
         tools:layout="@layout/fragment_restaurant_detail" >
         <argument
             android:name="key_restaurant_id"
             app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/ChatsFragment"
+        android:name="com.google.firebase.example.fireeats.ChatsFragment"
+        tools:layout="@layout/fragment_chats" >
+        <argument
+            android:name="user"
+            app:argType="com.google.firebase.example.fireeats.model.User"
+            app:nullable="false"/>
+        <argument
+            android:name="userId"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_ChatsFragment_to_MessagesFragment"
+            app:destination="@+id/MessagesFragment"/>
+
+        <action
+            android:id="@+id/action_ChatsFragment_to_MessagesScrollFragment"
+            app:destination="@+id/MessagesScrollFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/MessagesFragment"
+        android:name="com.google.firebase.example.fireeats.MessagesFragment"
+        tools:layout="@layout/fragment_messages" >
+        <argument
+            android:name="userId"
+            app:argType="string" />
+        <argument
+            android:name="chatId"
+            app:argType="string" />
+        <argument
+            android:name="chat"
+            app:argType="com.google.firebase.example.fireeats.model.Chat" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/MessagesScrollFragment"
+        android:name="com.google.firebase.example.fireeats.MessagesScrollFragment"
+        tools:layout="@layout/fragment_messages_scroll" >
+        <argument
+            android:name="userId"
+            app:argType="string" />
+        <argument
+            android:name="chatId"
+            app:argType="string" />
+        <argument
+            android:name="chat"
+            app:argType="com.google.firebase.example.fireeats.model.Chat" />
     </fragment>
 
 </navigation>

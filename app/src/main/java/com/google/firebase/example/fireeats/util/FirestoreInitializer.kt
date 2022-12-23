@@ -18,7 +18,7 @@ class FirestoreInitializer : Initializer<FirebaseFirestore> {
         val firestore = Firebase.firestore
         // Use emulators only in debug builds
         if (BuildConfig.DEBUG) {
-            firestore.useEmulator(FIRESTORE_EMULATOR_HOST, FIRESTORE_EMULATOR_PORT)
+            //firestore.useEmulator(FIRESTORE_EMULATOR_HOST, FIRESTORE_EMULATOR_PORT)
         }
         return firestore
     }

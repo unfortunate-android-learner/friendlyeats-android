@@ -5,6 +5,10 @@
     <string name="value_any_city">Anywhere</string>
     <string name="value_any_price">Any price</string>
 
+    <string name="added">Added</string>
+    <string name="modified">Modified</string>
+    <string name="removed">Removed</string>
+
     <string name="price_1">$</string>
     <string name="price_2">$$</string>
     <string name="price_3">$$$</string>
@@ -130,4 +134,6 @@
         <item>@string/sort_by_popularity</item>
         <item>@string/sort_by_price</item>
     </string-array>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

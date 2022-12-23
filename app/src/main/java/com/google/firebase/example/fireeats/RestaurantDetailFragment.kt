@@ -163,8 +163,31 @@ class RestaurantDetailFragment : Fragment(),
     }
 
     private fun addRating(restaurantRef: DocumentReference, rating: Rating): Task<Void> {
-        // TODO(developer): Implement
-        return Tasks.forException(Exception("not yet implemented"))
+        // Create reference for new rating, for use inside the transaction
+        val ratingRef = restaurantRef.collection("ratings").document()
+
+        // In a transaction, add the new rating and update the aggregate totals
+        return firestore.runTransaction { transaction ->
+            val restaurant = transaction.get(restaurantRef).toObject<Restaurant>()
+                ?: throw Exception("Restaurant not found at ${restaurantRef.path}")
+
+            // Compute new number of ratings
+            val newNumRatings = restaurant.numRatings + 1
+
+            // Compute new average rating
+            val oldRatingTotal = restaurant.avgRating * restaurant.numRatings
+            val newAvgRating = (oldRatingTotal + rating.rating) / newNumRatings
+
+            // Set new restaurant info
+            restaurant.numRatings = newNumRatings
+            restaurant.avgRating = newAvgRating
+
+            // Commit to Firestore
+            transaction.set(restaurantRef, restaurant)
+            transaction.set(ratingRef, rating)
+
+            null
+        }
     }
 
     private fun hideKeyboard() {

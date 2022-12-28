@@ -9,17 +9,18 @@ import android.widget.AbsListView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.Timestamp
-import com.google.firebase.example.fireeats.adapter.MessageScrollAdapter
-import com.google.firebase.example.fireeats.databinding.FragmentMessagesScrollBinding
+import com.google.firebase.example.fireeats.adapter.MessageTalkAdapter
+import com.google.firebase.example.fireeats.databinding.FragmentMessagesTalkBinding
 import com.google.firebase.example.fireeats.model.Chat
 import com.google.firebase.example.fireeats.model.Message
 import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 
-class MessagesScrollFragment: Fragment(), MessageScrollAdapter.OnScrollMessageSelectedListener {
+class MessagesTalkFragment: Fragment(), MessageTalkAdapter.OnScrollMessageSelectedListener {
 
     private lateinit var firestore: FirebaseFirestore
     private lateinit var chatRef: DocumentReference
@@ -29,8 +30,8 @@ class MessagesScrollFragment: Fragment(), MessageScrollAdapter.OnScrollMessageSe
     private lateinit var lastVisibleProduct: DocumentSnapshot
     private var isLastProductReached: Boolean = false
 
-    private lateinit var binding: FragmentMessagesScrollBinding
-    private var adapter: MessageScrollAdapter? = null
+    private lateinit var binding: FragmentMessagesTalkBinding
+    private var adapter: MessageTalkAdapter? = null
     private var isScrolling: Boolean = false
 
     override fun onCreateView(
@@ -38,7 +39,7 @@ class MessagesScrollFragment: Fragment(), MessageScrollAdapter.OnScrollMessageSe
         savedInstanceState: Bundle?
     ): View {
         // Inflate the layout for this fragment
-        binding = FragmentMessagesScrollBinding.inflate(inflater, container, false)
+        binding = FragmentMessagesTalkBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -59,21 +60,21 @@ class MessagesScrollFragment: Fragment(), MessageScrollAdapter.OnScrollMessageSe
 
         query = chatRef.collection("msgs")
             //.orderBy("timestamp", Query.Direction.ASCENDING)
-            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .orderBy("time", Query.Direction.DESCENDING)
             //.whereGreaterThan("timestamp", Timestamp.now())
-            .whereLessThan("timestamp", Timestamp.now())
+            //.whereLessThan("timestamp", Timestamp.now())
             .limit(7)
 
         chat.chat_members?.let { members ->
             query2 = firestore.collection("usrs")
-                .whereIn(FieldPath.documentId(), members)
+                //.whereIn(FieldPath.documentId(), members)
 
             query2.get().addOnSuccessListener { document ->
                 val userSnapshotList = document.documents
 
                 // RecyclerView
                 query.let {
-                    adapter = object : MessageScrollAdapter(it, userSnapshotList, this@MessagesScrollFragment, true) {
+                    adapter = object : MessageTalkAdapter(it, userSnapshotList, this@MessagesTalkFragment, true, System.currentTimeMillis()) {
                         override fun onDataChanged() {
                             // we don't do that here
                         }
@@ -86,11 +87,11 @@ class MessagesScrollFragment: Fragment(), MessageScrollAdapter.OnScrollMessageSe
                             ).show()
                         }
                     }
-                    binding.rvMessages.adapter = adapter
+                    binding.rvChats.adapter = adapter
                 }
 
                 val layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-                binding.rvMessages.layoutManager = layoutManager
+                binding.rvChats.layoutManager = layoutManager
 
                 // Start listening for Firestore updates
                 adapter?.startListening()
@@ -100,6 +101,17 @@ class MessagesScrollFragment: Fragment(), MessageScrollAdapter.OnScrollMessageSe
         }
 
         initRecyclerViewOnScrollListener()
+
+        binding.btnSend.setOnClickListener {
+            addMessage(chatRef, Message(
+                message = binding.etMessage.text.toString(),
+                sender = userId,
+                time = System.currentTimeMillis().toString()
+            )
+            )
+
+            binding.etMessage.setText("")
+        }
     }
 
     override fun onStart() {
@@ -110,6 +122,23 @@ class MessagesScrollFragment: Fragment(), MessageScrollAdapter.OnScrollMessageSe
         super.onStop()
 
         adapter?.stopListening()
+    }
+
+    private fun addMessage(chatRef: DocumentReference, message: Message): Task<Void> {
+        // Create reference for new rating, for use inside the transaction
+        val messageRef = chatRef.collection("msgs").document()
+
+        // In a transaction, add the new rating and update the aggregate totals
+        return firestore.runTransaction { transaction ->
+            val chat = transaction.get(chatRef).toObject<Chat>()
+                ?: throw Exception("Restaurant not found at ${chatRef.path}")
+
+            // Commit to Firestore
+            transaction.set(chatRef, chat)
+            transaction.set(messageRef, message)
+
+            null
+        }
     }
 
     private fun initRecyclerViewOnScrollListener() {
@@ -134,7 +163,7 @@ class MessagesScrollFragment: Fragment(), MessageScrollAdapter.OnScrollMessageSe
                             if(!isLastProductReached) {
                                 query = chatRef.collection("msgs")
                                     //.orderBy("timestamp", Query.Direction.ASCENDING)
-                                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                                    .orderBy("time", Query.Direction.DESCENDING)
                                     .startAfter(lastVisibleProduct)
                                     .limit(7)
 
@@ -144,7 +173,7 @@ class MessagesScrollFragment: Fragment(), MessageScrollAdapter.OnScrollMessageSe
                     }
                 }
             }
-        binding.rvMessages.addOnScrollListener(onScrollListener)
+        binding.rvChats.addOnScrollListener(onScrollListener)
     }
 
     override fun onScrollMessageSelected(message: Message) {
@@ -161,7 +190,7 @@ class MessagesScrollFragment: Fragment(), MessageScrollAdapter.OnScrollMessageSe
 
     override fun scrollToBottom() {
         adapter?.let { it ->
-            binding.rvMessages.scrollToPosition(it.itemCount - 1)
+            binding.rvChats.scrollToPosition(it.itemCount - 1)
         }
     }
 }

@@ -115,7 +115,7 @@ class ChatsFragment : Fragment(), ChatAdapter.OnChatSelectedListener {
         }
 
         val action = ChatsFragmentDirections
-            .actionChatsFragmentToMessagesScrollFragment(
+            .actionChatsFragmentToMessagesTalkFragment(
                 userId,
                 chat.id,
                 chatData

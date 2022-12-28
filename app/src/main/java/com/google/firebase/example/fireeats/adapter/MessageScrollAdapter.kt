@@ -12,6 +12,10 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.toObject
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.format.DateTimeFormatter
+import java.util.Date
 
 open class MessageScrollAdapter(query: Query, val userSnapshotList: List<DocumentSnapshot>, private val listener: OnScrollMessageSelectedListener,
 var isFirstTime: Boolean = false) :
@@ -78,7 +82,7 @@ var isFirstTime: Boolean = false) :
                     val user = user.toObject<User>()
                     user?.let {
                         binding.tvTitle.text = user.name + ": " + binding.tvTitle.text.toString() +
-                                "\n" + message.timestamp?.toDate()
+                                "\n" + SimpleDateFormat("dd/MM/yyyy hh:mm:ss").format(Date(message.time!!.toLong()))
                     }
                 }
             }

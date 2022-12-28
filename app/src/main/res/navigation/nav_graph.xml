@@ -51,6 +51,10 @@
         <action
             android:id="@+id/action_ChatsFragment_to_MessagesScrollFragment"
             app:destination="@+id/MessagesScrollFragment"/>
+
+        <action
+            android:id="@+id/action_ChatsFragment_to_MessagesTalkFragment"
+            app:destination="@+id/MessagesTalkFragment"/>
     </fragment>
 
     <fragment
@@ -72,6 +76,21 @@
         android:id="@+id/MessagesScrollFragment"
         android:name="com.google.firebase.example.fireeats.MessagesScrollFragment"
         tools:layout="@layout/fragment_messages_scroll" >
+        <argument
+            android:name="userId"
+            app:argType="string" />
+        <argument
+            android:name="chatId"
+            app:argType="string" />
+        <argument
+            android:name="chat"
+            app:argType="com.google.firebase.example.fireeats.model.Chat" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/MessagesTalkFragment"
+        android:name="com.google.firebase.example.fireeats.MessagesTalkFragment"
+        tools:layout="@layout/fragment_messages_talk" >
         <argument
             android:name="userId"
             app:argType="string" />

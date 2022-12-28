@@ -9,14 +9,10 @@ data class Message(
     val message: String? = null,
     val sender: String? = null,
     val time: String? = null,
-
-    @ServerTimestamp
-    val timestamp: Timestamp? = null
 ) {
     companion object {
         const val FIELD_MESSAGE = "message"
         const val FIELD_SENDER = "sender"
         const val FIELD_TIME = "time"
-        const val FIELD_TIMESTAMP = "timestamp"
     }
 }

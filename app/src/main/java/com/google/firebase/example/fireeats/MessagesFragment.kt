@@ -64,7 +64,7 @@ class MessagesFragment: Fragment(), MessageAdapter.OnMessageSelectedListener {
             .orderBy("timestamp", Query.Direction.ASCENDING)
             .whereGreaterThan("timestamp", Timestamp.now())
 
-        chat.members?.let { members ->
+        chat.chat_members?.let { members ->
             query2 = firestore.collection("usrs")
                 .whereIn(FieldPath.documentId(), members)
 

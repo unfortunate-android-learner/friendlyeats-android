@@ -6,30 +6,12 @@
     app:startDestination="@id/UsersFragment">
 
     <fragment
-        android:id="@+id/MainFragment"
-        android:name="com.google.firebase.example.fireeats.MainFragment"
-        tools:layout="@layout/fragment_main" >
-        <action
-            android:id="@+id/action_MainFragment_to_RestaurantDetailFragment"
-            app:destination="@id/RestaurantDetailFragment"/>
-    </fragment>
-
-    <fragment
         android:id="@+id/UsersFragment"
         android:name="com.google.firebase.example.fireeats.UsersFragment"
         tools:layout="@layout/fragment_users">
         <action
             android:id="@+id/action_UsersFragment_to_ChatsFragment"
             app:destination="@+id/ChatsFragment"/>
-    </fragment>
-
-    <fragment
-        android:id="@+id/RestaurantDetailFragment"
-        android:name="com.google.firebase.example.fireeats.RestaurantDetailFragment"
-        tools:layout="@layout/fragment_restaurant_detail" >
-        <argument
-            android:name="key_restaurant_id"
-            app:argType="string" />
     </fragment>
 
     <fragment

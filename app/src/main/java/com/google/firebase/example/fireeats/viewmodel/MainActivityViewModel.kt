@@ -1,7 +1,6 @@
 package com.google.firebase.example.fireeats.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.google.firebase.example.fireeats.Filters
 
 /**
  * ViewModel for [com.google.firebase.example.fireeats.MainActivity].
@@ -10,5 +9,4 @@ import com.google.firebase.example.fireeats.Filters
 class MainActivityViewModel : ViewModel() {
 
     var isSigningIn: Boolean = false
-    var filters: Filters = Filters.default
 }

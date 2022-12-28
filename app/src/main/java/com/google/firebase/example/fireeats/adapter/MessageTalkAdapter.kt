@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.Timestamp
 import com.google.firebase.example.fireeats.databinding.ItemMessageBinding
 import com.google.firebase.example.fireeats.model.Message
 import com.google.firebase.example.fireeats.model.User
@@ -21,7 +22,7 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
 
     private var registration: ListenerRegistration? = null
 
-    private val docSnapshotList = ArrayList<DocumentSnapshot>()
+    private var docSnapshotList = ArrayList<DocumentSnapshot>()
 
     interface OnScrollMessageSelectedListener {
 
@@ -169,11 +170,46 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
             docSnapshotList.add(change.newIndex, change.document)
             notifyItemMoved(change.oldIndex, change.newIndex)
         }*/
+
+        val data = change.document
+
+        for(item in docSnapshotList) {
+            if(item.id == data.id) {
+                val foundItem = item
+
+                val index = docSnapshotList.indexOf(foundItem)
+
+                val mutableList = docSnapshotList.toMutableList()
+
+                mutableList.removeAt(index)
+                mutableList.add(index, data)
+
+                docSnapshotList = mutableList.toList() as ArrayList<DocumentSnapshot>
+                notifyDataSetChanged()
+            }
+        }
     }
 
     private fun onDocumentRemoved(change: DocumentChange) {
         /*docSnapshotList.removeAt(change.oldIndex)
         notifyItemRemoved(change.oldIndex)*/
+
+        val data = change.document
+
+        for(item in docSnapshotList) {
+            if(item.id == data.id) {
+                val foundItem = item
+
+                val index = docSnapshotList.indexOf(foundItem)
+
+                val mutableList = docSnapshotList.toMutableList()
+
+                mutableList.removeAt(index)
+
+                docSnapshotList = mutableList.toList() as ArrayList<DocumentSnapshot>
+                notifyDataSetChanged()
+            }
+        }
     }
 
     fun stopListening() {

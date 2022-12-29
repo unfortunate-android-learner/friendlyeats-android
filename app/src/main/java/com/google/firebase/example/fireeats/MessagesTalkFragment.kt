@@ -23,7 +23,7 @@ import com.google.firebase.ktx.Firebase
 class MessagesTalkFragment: Fragment(), MessageTalkAdapter.OnScrollMessageSelectedListener {
 
     private lateinit var firestore: FirebaseFirestore
-    private lateinit var chatRef: DocumentReference
+    private lateinit var chatDocument: DocumentReference
     private lateinit var query: Query
     private lateinit var query2: Query
 
@@ -32,7 +32,6 @@ class MessagesTalkFragment: Fragment(), MessageTalkAdapter.OnScrollMessageSelect
 
     private lateinit var binding: FragmentMessagesTalkBinding
     private var adapter: MessageTalkAdapter? = null
-    private var isScrolling: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,9 +45,9 @@ class MessagesTalkFragment: Fragment(), MessageTalkAdapter.OnScrollMessageSelect
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val chatId: String = MessagesFragmentArgs.fromBundle(requireArguments()).chatId
-        val userId: String = MessagesFragmentArgs.fromBundle(requireArguments()).userId
-        val chat: Chat = MessagesFragmentArgs.fromBundle(requireArguments()).chat
+        val chatId: String = MessagesTalkFragmentArgs.fromBundle(requireArguments()).chatId
+        val userId: String = MessagesTalkFragmentArgs.fromBundle(requireArguments()).userId
+        val chat: Chat = MessagesTalkFragmentArgs.fromBundle(requireArguments()).chat
 
         // Enable Firestore logging
         FirebaseFirestore.setLoggingEnabled(true)
@@ -56,9 +55,9 @@ class MessagesTalkFragment: Fragment(), MessageTalkAdapter.OnScrollMessageSelect
         // Initialize Firestore
         firestore = Firebase.firestore
 
-        chatRef = firestore.collection("chts").document(chatId)
+        chatDocument = firestore.collection("chts").document(chatId)
 
-        query = chatRef.collection("msgs")
+        query = chatDocument.collection("msgs")
             //.orderBy("timestamp", Query.Direction.ASCENDING)
             .orderBy("time", Query.Direction.DESCENDING)
             //.whereGreaterThan("timestamp", Timestamp.now())
@@ -103,7 +102,7 @@ class MessagesTalkFragment: Fragment(), MessageTalkAdapter.OnScrollMessageSelect
         initRecyclerViewOnScrollListener()
 
         binding.btnSend.setOnClickListener {
-            addMessage(chatRef, Message(
+            addMessage(chatDocument, Message(
                 message = binding.etMessage.text.toString(),
                 sender = userId,
                 time = System.currentTimeMillis().toString()
@@ -146,9 +145,6 @@ class MessagesTalkFragment: Fragment(), MessageTalkAdapter.OnScrollMessageSelect
             object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     super.onScrollStateChanged(recyclerView, newState)
-                    if (newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
-                        isScrolling = true
-                    }
                 }
 
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -157,11 +153,9 @@ class MessagesTalkFragment: Fragment(), MessageTalkAdapter.OnScrollMessageSelect
                     if (layoutManager != null) {
                         val reachedTop = layoutManager.findFirstCompletelyVisibleItemPosition()
 
-                        if (isScrolling && reachedTop == 0) {
-                            isScrolling = false
-
+                        if (reachedTop == 0) {
                             if(!isLastProductReached) {
-                                query = chatRef.collection("msgs")
+                                query = chatDocument.collection("msgs")
                                     //.orderBy("timestamp", Query.Direction.ASCENDING)
                                     .orderBy("time", Query.Direction.DESCENDING)
                                     .startAfter(lastVisibleProduct)
@@ -176,8 +170,18 @@ class MessagesTalkFragment: Fragment(), MessageTalkAdapter.OnScrollMessageSelect
         binding.rvChats.addOnScrollListener(onScrollListener)
     }
 
-    override fun onScrollMessageSelected(message: Message) {
+    override fun onMessageClicked(message: Message) {
 
+    }
+
+    override fun onMessageDeleted(snapshot: DocumentSnapshot) {
+        val messageDocument = chatDocument.collection("msgs").document(snapshot.id)
+
+        val updatedData = hashMapOf(
+            "deleted" to true
+        )
+
+        messageDocument.set(updatedData, SetOptions.merge())
     }
 
     override fun setLastVisibleProduct(lastVisibleProduct: DocumentSnapshot) {

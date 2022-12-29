@@ -3,6 +3,7 @@ package com.google.firebase.example.fireeats.adapter
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
@@ -26,7 +27,9 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
 
     interface OnScrollMessageSelectedListener {
 
-        fun onScrollMessageSelected(message: Message)
+        fun onMessageDeleted(snapshot: DocumentSnapshot)
+
+        fun onMessageClicked(message: Message)
 
         fun setLastVisibleProduct(lastVisibleProduct: DocumentSnapshot)
 
@@ -57,6 +60,12 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
                 return
             }
 
+            if(message.deleted == true) {
+                binding.layoutMessage.visibility = View.GONE
+            } else {
+                binding.layoutMessage.visibility = View.VISIBLE
+            }
+
             binding.tvTitle.text = message.message
 
             for(user in userSnapshotList) {
@@ -69,9 +78,12 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
                 }
             }
 
-            // Click listener
             binding.root.setOnClickListener {
-                listener?.onScrollMessageSelected(message)
+                listener?.onMessageClicked(message)
+            }
+
+            binding.ibDelete.setOnClickListener {
+                listener?.onMessageDeleted(snapshot)
             }
         }
     }
@@ -83,7 +95,6 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
     }
 
     fun startListening() {
-        // TODO(developer): Implement
         if (registration == null) {
             registration = query.addSnapshotListener(this)
         }
@@ -92,10 +103,9 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
     // Add this method
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onEvent(documentSnapshots: QuerySnapshot?, e: FirebaseFirestoreException?) {
-
         // Handle errors
         if (e != null) {
-            Log.w(TAG, "onEvent:error", e)
+            Log.w("MessageTalkAdapter", "onEvent:error", e)
             return
         }
 
@@ -105,8 +115,6 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
                 // snapshot of the changed document
                 when (change.type) {
                     DocumentChange.Type.ADDED -> {
-                        // TODO: handle document added
-
                         val currentDateTime = Date(currentTimeMilli)
                         val messageDateTime = Date(change.document.toObject<Message>().time!!.toLong())
 
@@ -117,18 +125,20 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
                         }
                     }
                     DocumentChange.Type.MODIFIED -> {
-                        // TODO: handle document changed
                         onDocumentModified(change)
                     }
                     DocumentChange.Type.REMOVED -> {
-                        // TODO: handle document removed
-                        onDocumentRemoved(change)
+                        // DocumentChange.Type.REMOVED
+                        // It is running every time document is added
+                        // So, I just commented it
+                        // and I will use
+                        // DocumentChange.Type.MODIFIED
+                        // for deleting
+                        //onDocumentRemoved(change)
                     }
                 }
             }
         }
-
-        onDataChanged()
 
         if(documentSnapshots != null) {
             val querySnapshotSize = documentSnapshots.size()
@@ -149,7 +159,6 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
     }
 
     private fun onDocumentAdded(change: DocumentChange) {
-        //snapshots.add(change.newIndex, change.document)
         docSnapshotList.add(0, change.document)
         notifyItemInserted(0)
     }
@@ -160,17 +169,6 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
     }
 
     private fun onDocumentModified(change: DocumentChange) {
-        /*if (change.oldIndex == change.newIndex) {
-            // Item changed but remained in same position
-            docSnapshotList[change.oldIndex] = change.document
-            notifyItemChanged(change.oldIndex)
-        } else {
-            // Item changed and changed position
-            docSnapshotList.removeAt(change.oldIndex)
-            docSnapshotList.add(change.newIndex, change.document)
-            notifyItemMoved(change.oldIndex, change.newIndex)
-        }*/
-
         val data = change.document
 
         for(item in docSnapshotList) {
@@ -191,9 +189,6 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
     }
 
     private fun onDocumentRemoved(change: DocumentChange) {
-        /*docSnapshotList.removeAt(change.oldIndex)
-        notifyItemRemoved(change.oldIndex)*/
-
         val data = change.document
 
         for(item in docSnapshotList) {
@@ -221,7 +216,7 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
     }
 
     open fun onError(e: FirebaseFirestoreException) {
-        Log.w(TAG, "onError", e)
+        Log.w("MessageTalkAdapter", "onError", e)
     }
 
     open fun onDataChanged() {}
@@ -232,10 +227,5 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
 
     protected fun getSnapshot(index: Int): DocumentSnapshot {
         return docSnapshotList[index]
-    }
-
-    companion object {
-
-        private const val TAG = "FirestoreAdapter"
     }
 }

@@ -9,10 +9,12 @@ data class Message(
     val message: String? = null,
     val sender: String? = null,
     val time: String? = null,
+    var deleted: Boolean? = false
 ) {
     companion object {
         const val FIELD_MESSAGE = "message"
         const val FIELD_SENDER = "sender"
         const val FIELD_TIME = "time"
+        const val FIELD_DELETED = "deleted"
     }
 }

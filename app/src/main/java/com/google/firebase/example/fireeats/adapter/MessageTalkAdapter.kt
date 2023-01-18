@@ -159,8 +159,10 @@ open class MessageTalkAdapter(var query: Query, val userSnapshotList: List<Docum
     }
 
     private fun onDocumentAdded(change: DocumentChange) {
-        docSnapshotList.add(0, change.document)
-        notifyItemInserted(0)
+        if(!docSnapshotList.contains(change.document)) {
+            docSnapshotList.add(0, change.document)
+            notifyItemInserted(0)
+        }
     }
 
     private fun onDocumentNewAdded(change: DocumentChange) {
